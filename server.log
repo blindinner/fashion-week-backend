@@ -1,0 +1,49 @@
+Fashion Show Ticket backend running on port 4000
+Calling Grow API with data: {
+  pageCode: '076c48159335',
+  userId: '2c731697f2abda19',
+  cancelUrl: 'http://localhost:3002/checkout/cancel?bookingId=d727517a-c4d5-4801-84b9-e5247452775c',
+  successUrl: 'http://localhost:3002/checkout/success?bookingId=d727517a-c4d5-4801-84b9-e5247452775c',
+  description: 'Vivi Bellaish - Vivi Bellaish',
+  sum: '30',
+  chargeType: 1,
+  'transactionTypes[0]': 1,
+  'pageField[fullName]': 'benji bassal',
+  'pageField[phone]': '0542645588'
+}
+Grow API response: {
+  status: 1,
+  err: '',
+  data: {
+    processId: 640908,
+    processToken: 'a7c379ce6caeb877b94f757d5f5756af',
+    authCode: 'f749af96d8e09f8ae97603a455796ced%NjQxMTI1'
+  }
+}
+Error fetching event pricing: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '    at node:internal/deps/undici/undici:12502:13\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async file:///Users/michael/Development/Tel%20Aviv%20Fashion%20Week/backend/routes/seats.js:16:61',
+  hint: '',
+  code: ''
+}
+Error fetching event pricing: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '    at node:internal/deps/undici/undici:12502:13\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async file:///Users/michael/Development/Tel%20Aviv%20Fashion%20Week/backend/routes/seats.js:16:61',
+  hint: '',
+  code: ''
+}
+Error fetching seats: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '    at node:internal/deps/undici/undici:12502:13\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async file:///Users/michael/Development/Tel%20Aviv%20Fashion%20Week/backend/routes/seats.js:27:52',
+  hint: '',
+  code: ''
+}
