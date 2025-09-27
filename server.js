@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import seatsRouter from './routes/seats.js';
 import checkoutRouter from './routes/checkout.js';
+import testRouter from './routes/test.js';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,11 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Register routes BEFORE starting the server
+app.use('/api/seats', seatsRouter);
+app.use('/api/checkout', checkoutRouter);
+app.use('/api/test', testRouter);
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
@@ -35,8 +41,5 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Fashion Show Ticket backend running on port ${PORT}`);
 });
-
-app.use('/api/seats', seatsRouter);
-app.use('/api/checkout', checkoutRouter);
 
 export default app; 
