@@ -67,4 +67,43 @@ router.get('/environment', (req, res) => {
     });
 });
 
+// GET /api/test/bookings
+router.get('/bookings', async (req, res) => {
+    try {
+        console.log('=== TESTING BOOKINGS TABLE ===');
+        
+        // Get all bookings
+        const { data: bookings, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) {
+            console.error('Bookings query error:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch bookings',
+                details: error.message
+            });
+        }
+
+        console.log('Bookings found:', bookings?.length || 0);
+        return res.json({
+            success: true,
+            message: 'Bookings fetched successfully',
+            count: bookings?.length || 0,
+            bookings: bookings
+        });
+
+    } catch (error) {
+        console.error('Test bookings error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Test bookings failed',
+            details: error.message
+        });
+    }
+});
+
 export default router;
