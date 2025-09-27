@@ -145,4 +145,52 @@ router.get('/booking/:id', async (req, res) => {
     }
 });
 
+// GET /api/test/booking-simple/:id
+router.get('/booking-simple/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('=== TESTING SIMPLE BOOKING QUERY ===', id);
+        
+        // Simple query without single()
+        const { data: bookings, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', id);
+
+        console.log('Simple query result:', { bookings, error });
+
+        if (error) {
+            console.error('Simple booking query error:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch booking',
+                details: error.message
+            });
+        }
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Booking not found',
+                details: 'No booking found with this ID'
+            });
+        }
+
+        console.log('Booking found:', bookings[0]);
+        return res.json({
+            success: true,
+            message: 'Booking fetched successfully',
+            booking: bookings[0]
+        });
+
+    } catch (error) {
+        console.error('Simple booking test error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Simple booking test failed',
+            details: error.message
+        });
+    }
+});
+
 export default router;
