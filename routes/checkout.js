@@ -610,28 +610,28 @@ router.get('/booking/:id', async (req, res) => {
         const { id } = req.params;
         console.log('=== FETCHING BOOKING ===', id);
 
-        // First try without the events join to see if the booking exists
-        const { data: booking, error } = await supabase
+        // Use the same pattern as the working test endpoints
+        const { data: bookings, error } = await supabase
             .from('bookings')
             .select('*')
-            .eq('id', id)
-            .single();
+            .eq('id', id);
 
-        console.log('Booking query result:', { booking, error });
+        console.log('Booking query result:', { bookings, error });
 
         if (error) {
             console.error('Booking query error:', error);
             return res.status(404).json({ error: 'Booking not found', details: error.message });
         }
 
-        if (!booking) {
+        if (!bookings || bookings.length === 0) {
             console.log('No booking found for ID:', id);
             return res.status(404).json({ error: 'Booking not found' });
         }
 
+        const booking = bookings[0];
         console.log('Booking found:', booking);
 
-        // Now try to get the event details
+        // Try to get the event details
         const { data: event, error: eventError } = await supabase
             .from('events')
             .select('name, designer, date, time, description')
