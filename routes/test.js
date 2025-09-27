@@ -106,4 +106,43 @@ router.get('/bookings', async (req, res) => {
     }
 });
 
+// GET /api/test/booking/:id
+router.get('/booking/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('=== TESTING SPECIFIC BOOKING ===', id);
+        
+        // Get specific booking
+        const { data: booking, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Booking query error:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch booking',
+                details: error.message
+            });
+        }
+
+        console.log('Booking found:', booking);
+        return res.json({
+            success: true,
+            message: 'Booking fetched successfully',
+            booking: booking
+        });
+
+    } catch (error) {
+        console.error('Test booking error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Test booking failed',
+            details: error.message
+        });
+    }
+});
+
 export default router;
