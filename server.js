@@ -11,7 +11,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+// CORS configuration for production
+const corsOptions = {
+    origin: [
+        'https://www.fashionweektelaviv.com',
+        'https://fashionweektelaviv.com',
+        'http://localhost:3000' // For development
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
