@@ -410,7 +410,7 @@ router.post('/payment/success', async (req, res) => {
         booking = updatedBooking;
 
         // Call ApproveTransaction if we have transaction data from server notification OR legacy format
-        if (transactionData || (processId && growinConfirmationCode)) {
+        if (transactionData && transactionData.transactionId) {
             try {
                 console.log('Calling ApproveTransaction with data:', transactionData);
 
