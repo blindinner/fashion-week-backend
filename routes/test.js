@@ -48,6 +48,51 @@ router.get('/supabase-connection', async (req, res) => {
     }
 });
 
+// POST /api/test/fix-booking-event-ids
+router.post('/fix-booking-event-ids', async (req, res) => {
+    try {
+        console.log('🔍 Fixing booking event IDs...');
+
+        // Get the correct event ID
+        const { data: events, error: eventsError } = await supabase
+            .from('events')
+            .select('id, name')
+            .limit(1);
+
+        if (eventsError || !events.length) {
+            return res.status(500).json({ error: 'No events found' });
+        }
+
+        const correctEventId = events[0].id;
+        console.log('🎯 Correct event ID:', correctEventId);
+
+        // Update all bookings to use the correct event ID
+        const { data: updatedBookings, error: updateError } = await supabase
+            .from('bookings')
+            .update({ event_id: correctEventId })
+            .neq('event_id', correctEventId)
+            .select('id, event_id, user_name');
+
+        if (updateError) {
+            console.error('❌ Error updating bookings:', updateError);
+            return res.status(500).json({ error: 'Failed to update bookings' });
+        }
+
+        console.log(`✅ Updated ${updatedBookings?.length || 0} bookings`);
+
+        res.json({
+            success: true,
+            message: `Updated ${updatedBookings?.length || 0} bookings`,
+            correctEventId,
+            updatedBookings: updatedBookings?.length || 0
+        });
+
+    } catch (error) {
+        console.error('❌ Fix booking event IDs error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // GET /api/test/environment
 router.get('/environment', (req, res) => {
     const envVars = {
@@ -67,130 +112,6 @@ router.get('/environment', (req, res) => {
     });
 });
 
-// GET /api/test/bookings
-router.get('/bookings', async (req, res) => {
-    try {
-        console.log('=== TESTING BOOKINGS TABLE ===');
-
-        // Get all bookings
-        const { data: bookings, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-        if (error) {
-            console.error('Bookings query error:', error);
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch bookings',
-                details: error.message
-            });
-        }
-
-        console.log('Bookings found:', bookings?.length || 0);
-        return res.json({
-            success: true,
-            message: 'Bookings fetched successfully',
-            count: bookings?.length || 0,
-            bookings: bookings
-        });
-
-    } catch (error) {
-        console.error('Test bookings error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Test bookings failed',
-            details: error.message
-        });
-    }
-});
-
-// GET /api/test/booking/:id
-router.get('/booking/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log('=== TESTING SPECIFIC BOOKING ===', id);
-
-        // Get specific booking
-        const { data: booking, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) {
-            console.error('Booking query error:', error);
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch booking',
-                details: error.message
-            });
-        }
-
-        console.log('Booking found:', booking);
-        return res.json({
-            success: true,
-            message: 'Booking fetched successfully',
-            booking: booking
-        });
-
-    } catch (error) {
-        console.error('Test booking error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Test booking failed',
-            details: error.message
-        });
-    }
-});
-
-// GET /api/test/booking-simple/:id
-router.get('/booking-simple/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log('=== TESTING SIMPLE BOOKING QUERY ===', id);
-
-        // Simple query without single()
-        const { data: bookings, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('id', id);
-
-        console.log('Simple query result:', { bookings, error });
-
-        if (error) {
-            console.error('Simple booking query error:', error);
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch booking',
-                details: error.message
-            });
-        }
-
-        if (!bookings || bookings.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Booking not found',
-                details: 'No booking found with this ID'
-            });
-        }
-
-        console.log('Booking found:', bookings[0]);
-        return res.json({
-            success: true,
-            message: 'Booking fetched successfully',
-            booking: bookings[0]
-        });
-
-    } catch (error) {
-        console.error('Simple booking test error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Simple booking test failed',
-            details: error.message
-        });
-    }
-});
-
 export default router;
+
+

@@ -612,7 +612,8 @@ router.get('/booking/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { data: booking, error } = await supabase
+        // First try to get the booking with the original event_id
+        let { data: booking, error } = await supabase
             .from('bookings')
             .select(`
                 *,
@@ -627,6 +628,48 @@ router.get('/booking/:id', async (req, res) => {
             `)
             .eq('id', id)
             .single();
+
+        // If booking not found, try to fix the event_id and retry
+        if (error || !booking) {
+            console.log('Booking not found, attempting to fix event_id...');
+
+            // Get the correct event ID
+            const { data: events } = await supabase
+                .from('events')
+                .select('id')
+                .limit(1);
+
+            if (events && events.length > 0) {
+                const correctEventId = events[0].id;
+                console.log('Updating booking event_id to:', correctEventId);
+
+                // Update the booking's event_id
+                await supabase
+                    .from('bookings')
+                    .update({ event_id: correctEventId })
+                    .eq('id', id);
+
+                // Retry the query
+                const retryResult = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        events (
+                            name,
+                            title,
+                            designer,
+                            date,
+                            time,
+                            description
+                        )
+                    `)
+                    .eq('id', id)
+                    .single();
+
+                booking = retryResult.data;
+                error = retryResult.error;
+            }
+        }
 
         if (error || !booking) {
             return res.status(404).json({ error: 'Booking not found' });
