@@ -348,8 +348,7 @@ router.post('/payment/success', async (req, res) => {
         const { error: updateError } = await supabase
             .from('bookings')
             .update({
-                // Mark as paid since we're not calling ApproveTransaction
-                payment_status: 'paid',
+                // Don't mark as paid yet - wait for ApproveTransaction approval
                 growin_transaction_id: processId || booking.growin_transaction_id,
                 confirmation_number: growinConfirmationCode || booking.confirmation_number,
                 user_email: transactionData?.payerEmail || booking.user_email,
@@ -365,8 +364,8 @@ router.post('/payment/success', async (req, res) => {
                 card_suffix: transactionData?.cardSuffix || null,
                 payment_date: transactionData?.paymentDate || null,
 
-                // Set approve transaction status to approved since we're not calling it
-                approve_transaction_status: 'approved'
+                // Set approve transaction status to pending
+                approve_transaction_status: 'pending'
             })
             .eq('id', bookingId);
 
@@ -410,36 +409,22 @@ router.post('/payment/success', async (req, res) => {
         // Update booking variable with refreshed data
         booking = updatedBooking;
 
-        // Call ApproveTransaction if we have transaction data from server notification OR legacy format
-        if (transactionData && transactionData.transactionId) {
+        // Call ApproveTransaction if we have the necessary data
+        if (processId && growinConfirmationCode) {
             try {
-                console.log('Calling ApproveTransaction with data:', transactionData);
+                console.log('Calling ApproveTransaction with processId:', processId, 'and confirmationCode:', growinConfirmationCode);
 
                 const approveData = {
                     pageCode: process.env.GROWIN_PAGE_CODE || "076c48159335",
-                    transactionId: parseInt(transactionData.transactionId),
-                    transactionToken: transactionData.transactionToken,
-                    transactionTypeId: parseInt(transactionData.transactionTypeId),
-                    paymentType: parseInt(transactionData.paymentType),
-                    sum: parseInt(transactionData.sum),
-                    firstPaymentSum: parseInt(transactionData.firstPaymentSum),
-                    periodicalPaymentSum: parseInt(transactionData.periodicalPaymentSum),
-                    paymentsNum: parseInt(transactionData.paymentsNum),
-                    allPaymentsNum: parseInt(transactionData.allPaymentsNum),
-                    paymentDate: transactionData.paymentDate,
-                    asmachta: parseInt(transactionData.asmachta),
-                    description: transactionData.description,
-                    fullName: transactionData.fullName,
-                    payerPhone: parseInt(transactionData.payerPhone),
-                    payerEmail: transactionData.payerEmail,
-                    cardSuffix: parseInt(transactionData.cardSuffix),
-                    cardType: transactionData.cardType,
-                    cardTypeCode: parseInt(transactionData.cardTypeCode),
-                    cardBrand: transactionData.cardBrand,
-                    cardBrandCode: parseInt(transactionData.cardBrandCode),
-                    cardExp: parseInt(transactionData.cardExp),
-                    processId: parseInt(transactionData.processId),
-                    processToken: transactionData.processToken
+                    processId: parseInt(processId),
+                    processToken: booking.growin_transaction_id || processId, // Use the process token we have
+                    transactionId: parseInt(growinConfirmationCode), // Use confirmation code as transaction ID
+                    asmachta: parseInt(growinConfirmationCode),
+                    sum: booking.total_amount,
+                    description: `Booking ${bookingId}`,
+                    fullName: booking.user_name,
+                    payerEmail: booking.user_email,
+                    payerPhone: booking.user_phone
                 };
 
                 const approveFormData = new FormData();
@@ -483,10 +468,11 @@ router.post('/payment/success', async (req, res) => {
                     }
                 } else {
                     console.error('ApproveTransaction failed:', approveResponse.data);
-                    // Update booking with failed status
+                    // Update booking with failed status but still mark as paid since payment was successful
                     await supabase
                         .from('bookings')
                         .update({
+                            payment_status: 'paid', // Still mark as paid since payment was successful
                             approve_transaction_status: 'failed',
                             approve_transaction_response: JSON.stringify(approveResponse.data)
                         })
@@ -495,10 +481,11 @@ router.post('/payment/success', async (req, res) => {
 
             } catch (approveError) {
                 console.error('Error calling ApproveTransaction:', approveError?.response?.data || approveError.message);
-                // Update booking with failed status
+                // Update booking with failed status but still mark as paid since payment was successful
                 await supabase
                     .from('bookings')
                     .update({
+                        payment_status: 'paid', // Still mark as paid since payment was successful
                         approve_transaction_status: 'failed',
                         approve_transaction_response: JSON.stringify({
                             error: approveError?.message || 'Unknown error',
