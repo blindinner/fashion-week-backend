@@ -15,7 +15,8 @@ router.post('/growin/create', async (req, res) => {
             sum,
             description,
             eventId,
-            selectedSeats
+            selectedSeats,
+            stayTuned
         } = req.body;
 
         if (!fullName || !phone || !eventId || !selectedSeats) {
@@ -78,6 +79,20 @@ router.post('/growin/create', async (req, res) => {
             return res.status(500).json({ error: 'Database error updating seats' });
         }
 
+        // Extract seat details for database storage
+        const seatAreas = [...new Set(seats.map(s => s.area))].join(',')
+        const seatRows = [...new Set(seats.map(s => s.row_number))].join(',')
+        const seatNumbers = [...new Set(seats.map(s => s.seat_number))].join(',')
+
+        // Get designer name from event
+        const { data: eventData, error: eventError } = await supabase
+            .from('events')
+            .select('designer')
+            .eq('id', eventId)
+            .single()
+
+        const designerName = eventData?.designer || 'Unknown Designer'
+
         // Create booking
         const { data: booking, error: bookingError } = await supabase
             .from('bookings')
@@ -88,7 +103,12 @@ router.post('/growin/create', async (req, res) => {
                 user_phone: phone,
                 seat_ids: selectedSeats,
                 total_amount: totalAmount,
-                payment_status: 'pending'
+                payment_status: 'pending',
+                stay_tuned: stayTuned || false,
+                designer_name: designerName,
+                seat_areas: seatAreas,
+                seat_rows: seatRows,
+                seat_numbers: seatNumbers
             })
             .select()
             .single();
@@ -107,10 +127,10 @@ router.post('/growin/create', async (req, res) => {
         const paymentData = {
             pageCode: process.env.GROWIN_PAGE_CODE || "076c48159335",
             userId: process.env.GROWIN_USER_ID || "2c731697f2abda19",
-            cancelUrl: `https://production-test--tlvfw.netlify.app/checkout/cancel?bookingId=${booking.id}`,
-            successUrl: `https://production-test--tlvfw.netlify.app/checkout/success?bookingId=${booking.id}`,
+            cancelUrl: `${process.env.FRONTEND_URL || 'https://fashionweektelaviv.com'}/checkout/cancel?bookingId=${booking.id}`,
+            successUrl: `${process.env.FRONTEND_URL || 'https://fashionweektelaviv.com'}/checkout/success?bookingId=${booking.id}`,
             // Add backend callback URLs for Grow to call
-            notifyUrl: `https://fashion-week-backend-production.up.railway.app/api/checkout/payment/success?bookingId=${booking.id}`,
+            notifyUrl: `${process.env.BACKEND_URL || 'https://fashion-week-backend-production.up.railway.app'}/api/checkout/payment/success?bookingId=${booking.id}`,
             errorCallbackUrl: `${process.env.BACKEND_URL || 'http://localhost:4000'}/api/checkout/payment/error?bookingId=${booking.id}`,
             description: description || "Tel Aviv Fashion Week Ticket",
             // Always use server-calculated total amount to prevent client tampering
@@ -608,54 +628,32 @@ router.post('/payment/error', async (req, res) => {
 router.get('/booking/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        console.log('=== FETCHING BOOKING ===', id);
 
-        // Use the same pattern as the working test endpoints
-        const { data: bookings, error } = await supabase
+        const { data: booking, error } = await supabase
             .from('bookings')
-            .select('*')
-            .eq('id', id);
+            .select(`
+                *,
+                events (
+                    name,
+                    title,
+                    designer,
+                    date,
+                    time,
+                    description
+                )
+            `)
+            .eq('id', id)
+            .single();
 
-        console.log('Booking query result:', { bookings, error });
-
-        if (error) {
-            console.error('Booking query error:', error);
-            return res.status(404).json({ error: 'Booking not found', details: error.message });
-        }
-
-        if (!bookings || bookings.length === 0) {
-            console.log('No booking found for ID:', id);
+        if (error || !booking) {
             return res.status(404).json({ error: 'Booking not found' });
         }
 
-        const booking = bookings[0];
-        console.log('Booking found:', booking);
-
-        // Try to get the event details
-        const { data: event, error: eventError } = await supabase
-            .from('events')
-            .select('name, designer, date, time, description')
-            .eq('id', booking.event_id)
-            .single();
-
-        if (eventError) {
-            console.error('Event query error:', eventError);
-            // Return booking without event details
-            return res.json(booking);
-        }
-
-        // Combine booking and event data
-        const bookingWithEvent = {
-            ...booking,
-            events: event
-        };
-
-        console.log('Returning booking with event:', bookingWithEvent);
-        res.json(bookingWithEvent);
+        res.json(booking);
 
     } catch (error) {
         console.error('Get booking error:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

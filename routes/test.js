@@ -71,7 +71,7 @@ router.get('/environment', (req, res) => {
 router.get('/bookings', async (req, res) => {
     try {
         console.log('=== TESTING BOOKINGS TABLE ===');
-        
+
         // Get all bookings
         const { data: bookings, error } = await supabase
             .from('bookings')
@@ -111,7 +111,7 @@ router.get('/booking/:id', async (req, res) => {
     try {
         const { id } = req.params;
         console.log('=== TESTING SPECIFIC BOOKING ===', id);
-        
+
         // Get specific booking
         const { data: booking, error } = await supabase
             .from('bookings')
@@ -150,7 +150,7 @@ router.get('/booking-simple/:id', async (req, res) => {
     try {
         const { id } = req.params;
         console.log('=== TESTING SIMPLE BOOKING QUERY ===', id);
-        
+
         // Simple query without single()
         const { data: bookings, error } = await supabase
             .from('bookings')

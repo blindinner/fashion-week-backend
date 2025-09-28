@@ -61,7 +61,7 @@ export const sendTicketConfirmation = async (booking) => {
                         border-bottom: 2px solid #000;
                     }
                     .logo {
-                        max-width: 200px;
+                        max-width: 150px;
                         height: auto;
                         margin-bottom: 20px;
                     }
@@ -78,8 +78,9 @@ export const sendTicketConfirmation = async (booking) => {
                     .booking-details {
                         background-color: #f8f9fa;
                         border-radius: 6px;
-                        padding: 25px;
-                        margin: 25px 0;
+                        padding: 15px;
+                        margin: 25px auto;
+                        max-width: 400px;
                     }
                     .detail-row {
                         display: flex;
@@ -137,15 +138,15 @@ export const sendTicketConfirmation = async (booking) => {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://fashionweektelaviv.com/images/logo/2025/Final%20Logo.png" alt="Israel Canada Tel Aviv Fashion Week" class="logo">
-                        <h1>מודים על קנייתך</h1>
-                        <p style="text-align: right; direction: rtl; font-size: 18px; margin: 20px 0;">הרכישה הושלמה</p>
-                        <p style="text-align: right; direction: rtl; font-size: 16px; margin: 15px 0;">בהגעך לאירוע, הראה אימייל זה בעמדת איסוף הכרטיסים.</p>
+                        <img src="https://fashionweektelaviv.com/images/newlogo.jpg" alt="Israel Canada Tel Aviv Fashion Week" class="logo">
+                        <h1>הרכישה הושלמה בהצלחה</h1>
+                        <p style="text-align: right; direction: rtl; font-size: 18px; margin: 20px 0;">תודה שרכשת כרטיס לשבוע האופנה ישראל קנדה תל אביב 2025</p>
+                        <p style="text-align: right; direction: rtl; font-size: 18px; margin: 15px 0;">מייל זה הוא אישור הכניסה שלך, אין צורך בהדפסה – יש להציג אותו בכניסה בעמדות רישום שם תקבלו כרטיס פיזי לכניסה לתצוגה</p>
                         
                     </div>
 
                     <div class="booking-details">
-                        <h2 style="margin-top: 0; color: #000; font-size: 20px;">פרטי הזמנה</h2>
+                        <h2 style="margin-top: 0; color: #000; font-size: 20px; text-align: right; direction: rtl;">פרטי הזמנה</h2>
                         
                         <div class="detail-row">
                             <span class="detail-label">${eventDetails.name}</span>
@@ -156,6 +157,12 @@ export const sendTicketConfirmation = async (booking) => {
                             <span class="detail-label">Designer:</span>
                             <span class="detail-value">${eventDetails.designer}</span>
                         </div>
+                        ${booking.events?.description ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Event Description:</span>
+                            <span class="detail-value">${booking.events.description}</span>
+                        </div>
+                        ` : ''}
                         
                         <div class="detail-row">
                             <span class="detail-label">Date:</span>
