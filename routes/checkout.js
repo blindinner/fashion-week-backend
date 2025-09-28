@@ -122,8 +122,8 @@ router.post('/growin/create', async (req, res) => {
         const paymentData = {
             pageCode: process.env.GROWIN_PAGE_CODE || "076c48159335",
             userId: process.env.GROWIN_USER_ID || "2c731697f2abda19",
-            cancelUrl: `${process.env.FRONTEND_URL || 'https://fashionweektelaviv.com'}/checkout/cancel?bookingId=${booking.id}`,
-            successUrl: `${process.env.FRONTEND_URL || 'https://fashionweektelaviv.com'}/checkout/success?bookingId=${booking.id}`,
+            cancelUrl: `${process.env.FRONTEND_URL || 'https://production-test--tlvfw.netlify.app'}/checkout/cancel?bookingId=${booking.id}`,
+            successUrl: `${process.env.FRONTEND_URL || 'https://production-test--tlvfw.netlify.app'}/checkout/success?bookingId=${booking.id}`,
             // Add backend callback URLs for Grow to call
             notifyUrl: `${process.env.BACKEND_URL || 'https://fashion-week-backend-production.up.railway.app'}/api/checkout/payment/success?bookingId=${booking.id}`,
             errorCallbackUrl: `${process.env.BACKEND_URL || 'http://localhost:4000'}/api/checkout/payment/error?bookingId=${booking.id}`,
