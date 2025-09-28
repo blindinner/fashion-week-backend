@@ -103,12 +103,7 @@ router.post('/growin/create', async (req, res) => {
                 user_phone: phone,
                 seat_ids: selectedSeats,
                 total_amount: totalAmount,
-                payment_status: 'pending',
-                stay_tuned: stayTuned || false,
-                designer_name: designerName,
-                seat_areas: seatAreas,
-                seat_rows: seatRows,
-                seat_numbers: seatNumbers
+                payment_status: 'pending'
             })
             .select()
             .single();
