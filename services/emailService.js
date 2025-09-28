@@ -21,12 +21,12 @@ export const sendTicketConfirmation = async (booking) => {
         // Format event details with standardized name and proper date/time format
         const eventDetails = booking.events ? {
             name: 'Israel Canada Fashion Week Tel Aviv 2025',
-            designer: booking.events.designer || 'Featured Designer',
+            designer: booking.designer_name || booking.events.designer || 'Featured Designer',
             date: booking.events.formatted_date || booking.events.date || 'TBD',
             time: booking.events.formatted_time || booking.events.time || 'TBD'
         } : {
             name: 'Israel Canada Fashion Week Tel Aviv 2025',
-            designer: 'Featured Designer',
+            designer: booking.designer_name || 'Featured Designer',
             date: 'TBD',
             time: 'TBD'
         };
