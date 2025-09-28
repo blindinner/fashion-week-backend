@@ -17,7 +17,7 @@ const corsOptions = {
     origin: [
         'https://www.fashionweektelaviv.com',
         'https://fashionweektelaviv.com',
-        'https://production-test--tlvfw.netlify.app', // Test branch
+        'https://production-test--tlvfw.netlify.app', // Test domain
         'http://localhost:3000' // For development
     ],
     credentials: true,
