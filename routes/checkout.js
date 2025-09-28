@@ -348,7 +348,8 @@ router.post('/payment/success', async (req, res) => {
         const { error: updateError } = await supabase
             .from('bookings')
             .update({
-                // Don't mark as paid yet - wait for ApproveTransaction approval
+                // Mark as paid since we're not calling ApproveTransaction
+                payment_status: 'paid',
                 growin_transaction_id: processId || booking.growin_transaction_id,
                 confirmation_number: growinConfirmationCode || booking.confirmation_number,
                 user_email: transactionData?.payerEmail || booking.user_email,
@@ -364,8 +365,8 @@ router.post('/payment/success', async (req, res) => {
                 card_suffix: transactionData?.cardSuffix || null,
                 payment_date: transactionData?.paymentDate || null,
 
-                // Set approve transaction status to pending
-                approve_transaction_status: transactionData ? 'pending' : null
+                // Set approve transaction status to approved since we're not calling it
+                approve_transaction_status: 'approved'
             })
             .eq('id', bookingId);
 
